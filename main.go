@@ -16,6 +16,7 @@ func main() {
 	// parse flags
 	word := flag.String("word", "abc", "Word to generate combination strings from")
 	length := flag.Int("length", 4, "Length of combination strings")
+	count := flag.Int("count", 10, "Number of candidates to generate")
 	debugLevel := flag.String("debug", "info", "Enable debug printf")
 	flag.Parse()
 
@@ -34,7 +35,7 @@ func main() {
 	}
 
 	options := []WordScoreOption{
-		// WordScore options
+		WordScoreOptionMaxCombinations(*count),
 	}
 	myWord := NewWordScore(*word, options...)
 	slog.Debug("Remove common words")
