@@ -14,9 +14,8 @@ var removeCommonWord = map[string]struct{}{
 
 func main() {
 	// parse flags
-	word := flag.String("word", "abc", "Word to be generated candidate strings from")
-	minLength := flag.Int("min", 4, "Minimum length of candidate strings")
-	maxLength := flag.Int("max", 4, "Maximum length of candidate strings")
+	word := flag.String("word", "abc", "Word to generate combination strings from")
+	length := flag.Int("length", 4, "Length of combination strings")
 	debugLevel := flag.String("debug", "info", "Enable debug printf")
 	flag.Parse()
 
@@ -52,7 +51,7 @@ func main() {
 	myWord.Score(1, scoreConsonant)
 	slog.Debug("Set Letter score")
 	myWord.Score(1, scoreLetter)
-	combinations := myWord.Combinations(*minLength, *maxLength)
+	combinations := myWord.Combinations(*length)
 	quoted := make([]string, len(combinations))
 	for i, s := range combinations {
 		quoted[i] = fmt.Sprintf("%q", s)

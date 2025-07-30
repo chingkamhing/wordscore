@@ -229,17 +229,17 @@ func (ws *WordScore) Score(score int, scoreFunc ScoreFunc) {
 }
 
 // Combinations returns a list of combination strings base on different combination of Chars while meeting the specified min and max number of characters.
-func (ws *WordScore) Combinations(minLength, maxLength int) []string {
+func (ws *WordScore) Combinations(length int) []string {
 	// generate all combinations
-	combinations := ws.generateCombinations(minLength, maxLength)
+	combinations := ws.generateCombinations(length)
 	// cap the combinations to the maximum number of combinations
 	combinations = combinations[:min(len(combinations), ws.MaxCombination)]
 	// pad the combinations with zeroes to meet the minimum length
-	combinations = padZero(combinations, minLength)
+	combinations = padZero(combinations, length)
 	return combinations
 }
 
-func (ws *WordScore) generateCombinations(minLength, maxLength int) []string {
+func (ws *WordScore) generateCombinations(length int) []string {
 	// create a map of score to list of CharScore
 	maxScore := ws.maxScore()
 	scoreChars := make(map[int][]*CharScore, maxScore)
@@ -250,7 +250,7 @@ func (ws *WordScore) generateCombinations(minLength, maxLength int) []string {
 		scoreChars[cs.Score] = append(scoreChars[cs.Score], cs)
 	}
 
-	// find all the CharScore that just meet the minLength sorting from hightest to lowest score
+	// find all the CharScore that just meet the length sorting from hightest to lowest score
 	candidateChars := []*CharScore{}
 	const minScore = 1
 	for score := maxScore; score >= minScore; score-- {
@@ -279,14 +279,14 @@ forLoop:
 		lengthCharsMap[lengthAccumulate] = accumulateChars
 		slog.Debug("LengthChars", "score", score, "length", lengthAccumulate, "curr", charsToString(currChars), "prev", charsToString(prevChars), "accumulate", charsToString(accumulateChars))
 		switch {
-		case lengthAccumulate < minLength:
+		case lengthAccumulate < length:
 			// does not meet the min length, skip
-		case lengthAccumulate == minLength:
+		case lengthAccumulate == length:
 			results = append(results, charsToString(accumulateChars))
 			break forLoop
-		case lengthAccumulate > minLength:
-			// find a combination of chars that have the exact length of minLength while sorting by highest score
-			remainLength := minLength - len(prevChars)
+		case lengthAccumulate > length:
+			// find a combination of chars that have the exact length of length while sorting by highest score
+			remainLength := length - len(prevChars)
 			combinations := ws.combinationsChars(currChars, remainLength)
 			for _, chars := range combinations {
 				candidateChars := append(prevChars, chars...)
@@ -306,12 +306,12 @@ forLoop:
 	return results
 }
 
-// combinationsChars generates all possible combinations of CharScores that have the exact length of minLength.
-func (ws *WordScore) combinationsChars(chars []*CharScore, minLength int) [][]*CharScore {
+// combinationsChars generates all possible combinations of CharScores that have the exact length of length.
+func (ws *WordScore) combinationsChars(chars []*CharScore, length int) [][]*CharScore {
 	var results [][]*CharScore
 	var backtrack func(start int, current []*CharScore)
 	backtrack = func(start int, current []*CharScore) {
-		if len(current) == minLength {
+		if len(current) == length {
 			results = append(results, append([]*CharScore(nil), current...))
 			return
 		}
@@ -335,13 +335,13 @@ func (ws *WordScore) maxScore() int {
 	return maxScore
 }
 
-func padZero(words []string, minLength int) []string {
+func padZero(words []string, length int) []string {
 	results := make([]string, 0, len(words))
 	for _, word := range words {
-		if len(word) >= minLength {
+		if len(word) >= length {
 			results = append(results, word)
 		} else {
-			results = append(results, word+strings.Repeat("0", minLength-len(word)))
+			results = append(results, word+strings.Repeat("0", length-len(word)))
 		}
 	}
 	return results
